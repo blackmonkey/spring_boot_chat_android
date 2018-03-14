@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,7 +35,7 @@ public class LoginActivity extends AppCompatActivity {
     private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mNameView;
+    private EditText mNameView;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -43,7 +44,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mNameView = (AutoCompleteTextView) findViewById(R.id.nickname);
+        mNameView = (EditText) findViewById(R.id.nickname);
 
         Button loginButton = (Button) findViewById(R.id.sign_in_button);
         loginButton.setOnClickListener(new OnClickListener() {
