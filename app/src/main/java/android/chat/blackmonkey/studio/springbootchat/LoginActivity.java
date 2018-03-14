@@ -3,6 +3,7 @@ package android.chat.blackmonkey.studio.springbootchat;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.support.v4.util.PatternsCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.AsyncTask;
@@ -36,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
 
     // UI references.
     private EditText mNameView;
+    private EditText mHostView;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -45,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mNameView = (EditText) findViewById(R.id.nickname);
+        mHostView = (EditText) findViewById(R.id.host);
 
         Button loginButton = (Button) findViewById(R.id.sign_in_button);
         loginButton.setOnClickListener(new OnClickListener() {
@@ -70,9 +73,11 @@ public class LoginActivity extends AppCompatActivity {
 
         // Reset errors.
         mNameView.setError(null);
+        mHostView.setError(null);
 
         // Store values at the time of the login attempt.
         String nickname = mNameView.getText().toString();
+        String host = mHostView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -88,6 +93,17 @@ public class LoginActivity extends AppCompatActivity {
             cancel = true;
         }
 
+        // Check for a valid host.
+        if (TextUtils.isEmpty(host)) {
+            mHostView.setError(getString(R.string.error_field_required));
+            focusView = mHostView;
+            cancel = true;
+        } else if (!isHostValid(host)) {
+            mHostView.setError(getString(R.string.error_invalid_host));
+            focusView = mHostView;
+            cancel = true;
+        }
+
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
@@ -96,13 +112,18 @@ public class LoginActivity extends AppCompatActivity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(nickname);
+            mAuthTask = new UserLoginTask(nickname, host);
             mAuthTask.execute((Void) null);
         }
     }
 
     private boolean isNicknameValid(String name) {
         Matcher matcher = NICKNAME_PATTERN.matcher(name);
+        return matcher.matches();
+    }
+
+    private boolean isHostValid(String host) {
+        Matcher matcher = PatternsCompat.WEB_URL.matcher(host);
         return matcher.matches();
     }
 
@@ -149,9 +170,11 @@ public class LoginActivity extends AppCompatActivity {
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mNickname;
+        private final String mHost;
 
-        UserLoginTask(String name) {
+        UserLoginTask(String name, String host) {
             mNickname = name;
+            mHost = host;
         }
 
         @Override

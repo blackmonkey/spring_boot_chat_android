@@ -3,8 +3,10 @@
 
     <!-- Strings related to login -->
     <string name="prompt_nickname">Nickname (2~10 characters)</string>
+    <string name="prompt_host">Host URL</string>
     <string name="action_sign_in">Login</string>
     <string name="error_invalid_nickname">This nickname is invalid</string>
+    <string name="error_invalid_host">This host is invalid</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
 </resources>
