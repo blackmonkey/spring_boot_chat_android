@@ -26,7 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Common username pattern widely used in different websites.
      */
-    private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[\\p{L} .'-]+$");
+    private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[\\p{L} .'-]{2,10}$");
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
