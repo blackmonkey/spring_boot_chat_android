@@ -3,7 +3,6 @@ package android.chat.blackmonkey.studio.springbootchat;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.support.v4.util.PatternsCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.AsyncTask;
@@ -11,7 +10,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Patterns;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AutoCompleteTextView;
@@ -28,7 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Common username pattern widely used in different websites.
      */
-    private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9._-]{2,14}$");
+    private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[\\p{L} .'-]+$");
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
