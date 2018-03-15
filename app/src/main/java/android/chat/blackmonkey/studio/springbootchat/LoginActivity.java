@@ -3,19 +3,21 @@ package android.chat.blackmonkey.studio.springbootchat;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.support.v4.util.Pair;
 import android.support.v4.util.PatternsCompat;
 import android.support.v7.app.AppCompatActivity;
-
-import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,21 +27,19 @@ import java.util.regex.Pattern;
  */
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = LoginActivity.class.getSimpleName();
+
     /**
      * Common username pattern widely used in different websites.
      */
     private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[\\p{L} .'-]{2,10}$");
-
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    private UserLoginTask mAuthTask = null;
 
     // UI references.
     private EditText mNameView;
     private EditText mHostView;
     private View mProgressView;
     private View mLoginFormView;
+    private Disposable mSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,12 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         mHostView = (EditText) findViewById(R.id.host);
 
         Button loginButton = (Button) findViewById(R.id.sign_in_button);
-        loginButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+        loginButton.setOnClickListener(view -> attemptLogin());
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -67,7 +62,7 @@ public class LoginActivity extends AppCompatActivity {
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
+        if (mSubscription != null && !mSubscription.isDisposed()) {
             return;
         }
 
@@ -108,13 +103,16 @@ public class LoginActivity extends AppCompatActivity {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
             focusView.requestFocus();
-        } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true);
-            mAuthTask = new UserLoginTask(nickname, host);
-            mAuthTask.execute((Void) null);
+            return;
         }
+
+        mSubscription = Observable.just(new Pair<>(nickname, host))
+                .map(this::loginInBackground)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe(this::onBeforeLogin)
+                .subscribe(this::onAfterLogin);
+        Log.d(TAG, "mSubscription=" + mSubscription);
     }
 
     private boolean isNicknameValid(String name) {
@@ -163,50 +161,37 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    private <T> Boolean loginInBackground(Pair<String, String> loginInfo) {
+        String nickname = loginInfo.first;
+        String host = loginInfo.second;
 
-        private final String mNickname;
-        private final String mHost;
+        Log.d(TAG, "loginInBackground() nickname=" + nickname + ", host=" + host);
 
-        UserLoginTask(String name, String host) {
-            mNickname = name;
-            mHost = host;
+        // TODO: attempt authentication against a network service.
+
+        try {
+            // Simulate network access.
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            return false;
         }
 
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
+        // TODO: register the new account here.
+        return true;
+    }
 
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
+    private void onBeforeLogin(Disposable disposable) {
+        Log.d(TAG, "onBeforeLogin() disposable=" + disposable);
+        showProgress(true);
+    }
 
-            // TODO: register the new account here.
-            return true;
+    private void onAfterLogin(Boolean success) {
+        Log.d(TAG, "onAfterLogin() success=" + success + ", mSubscription=" + mSubscription);
+        if (mSubscription != null) {
+            mSubscription.dispose();
+            mSubscription = null;
         }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
+        showProgress(false);
     }
 }
 
