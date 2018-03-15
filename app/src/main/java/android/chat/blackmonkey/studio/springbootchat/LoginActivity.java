@@ -56,6 +56,12 @@ public class LoginActivity extends AppCompatActivity {
         mProgressView = findViewById(R.id.login_progress);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disposeSubscription();
+    }
+
     /**
      * Attempts to login the nickname specified by the login form.
      * If there are form errors (invalid nickname, missing fields, etc.), the
@@ -187,11 +193,15 @@ public class LoginActivity extends AppCompatActivity {
 
     private void onAfterLogin(Boolean success) {
         Log.d(TAG, "onAfterLogin() success=" + success + ", mSubscription=" + mSubscription);
+        disposeSubscription();
+        showProgress(false);
+    }
+
+    private void disposeSubscription() {
         if (mSubscription != null) {
             mSubscription.dispose();
             mSubscription = null;
         }
-        showProgress(false);
     }
 }
 
